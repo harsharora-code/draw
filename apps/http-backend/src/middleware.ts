@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { JWT_SECRET } from "@repo/backend-common/index";
+import { JWT_SECRET } from "@repo/backend-common/config";
 import jwt from 'jsonwebtoken'
 interface JwtPayload {
     userId: number
@@ -11,6 +11,7 @@ const decode  = jwt.verify(token, JWT_SECRET as string) as unknown as JwtPayload
 
 
 if(decode) {
+    //@ts-ignore
     req.userId = decode.userId;
     next()
 } else {
