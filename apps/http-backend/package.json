@@ -13,7 +13,6 @@
     "@repo/db": "workspace:*",
     "@types/jsonwebtoken": "^9.0.10",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2"
   },
@@ -22,7 +21,8 @@
     "@repo/common": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.5"
+    "@types/express": "^5.0.5",
+    "dotenv": "link:@types\\dotenv"
   },
   "keywords": [],
   "author": "",
