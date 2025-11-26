@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 import express, { json } from 'express'
 import { JWT_SECRET} from "@repo/backend-common/config";
 import { middleware } from "./middleware.js";
@@ -73,7 +73,7 @@ app.post('/signin', async (req, res) => {
     })
 });
 
-app.post('/room', middleware, (req, res) => {
+app.post('/room', middleware,  async (req, res) => {
      const data = CreateRoomSchema.safeParse(req.body);
     if(!data.success) {
         console.log(data.error);
@@ -83,9 +83,22 @@ app.post('/room', middleware, (req, res) => {
         return
 
     }
-    const userId = 1;
-    res.json({
-        roomId: 12323
+    const userId = req.userId;
+   try {
+    const room = await prismaClient.room.create({
+        data : {
+            slug: parseData.data.name,
+            adminId: userId
+        }
+        
     })
+    res.json({
+        roomId: room.id
+    })
+   } catch(e) {
+    res.status(411).json({
+        msg :'Room already exists'
+    })
+   }
 })
 app.listen(3000);
