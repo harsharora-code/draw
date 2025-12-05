@@ -74,15 +74,16 @@ app.post('/signin', async (req, res) => {
 });
 
 app.post('/room', middleware,  async (req, res) => {
-     const data = CreateRoomSchema.safeParse(req.body);
-    if(!data.success) {
-        console.log(data.error);
+     const parseData = CreateRoomSchema.safeParse(req.body);
+    if(!parseData.success) {
+        console.log(parseData.error);
         res.json({
             msg: "Invalid Inpuits"
         })
         return
 
     }
+    //@ts-ignore
     const userId = req.userId;
    try {
     const room = await prismaClient.room.create({
