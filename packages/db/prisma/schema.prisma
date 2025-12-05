@@ -29,12 +29,12 @@ model Room {
   id          Int        @id @default(autoincrement())
   slug       String      @unique
   createdAt  DateTime    @default(now())
-  adminId     String
+  adminId     String  
   admin      User     @relation(fields: [adminId], references: [id])
   chats      Chat[]
 }
 
-model Chat {
+model Chat { 
   id         Int        @id @default(autoincrement())
   roomId     Int
   message    String
