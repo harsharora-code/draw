@@ -37,7 +37,7 @@ app.post('/signup', async (req, res) => {
     } catch(e) {
             res.status(411).json({
             msg: "user already exists"
-        })
+        })  
     }
    
 
@@ -56,17 +56,18 @@ app.post('/signin', async (req, res) => {
     const {email, password} = parseData.data;
     const user = await prismaClient.user.findFirst({
         where : {
-          email, password
+          email: email,
+        password: password
         }
     })
     if(!user) {
         return res.status(411).json({
-            msg: "unauthorized"
+            msg: "user not found"
         })
     }
  
     const encode = jwt.sign({
-        userId: user?.id,
+        userId: user?.id,  
     }, JWT_SECRET as string)
     res.json({
         token : encode
@@ -102,4 +103,22 @@ app.post('/room', middleware,  async (req, res) => {
     })
    }
 })
+
+app.get("/chat/:roomId", async (req, res) => {
+    const roomId = Number(req.params.roomId);
+    const msg = await prismaClient.chat.findMany({
+        where: {
+            roomId: roomId,
+        },
+        orderBy: {
+            id: "desc",
+        },
+        take: 50
+    });
+    res.json({
+        msg
+    })
+
+})
+
 app.listen(3000);
