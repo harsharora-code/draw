@@ -42,11 +42,6 @@ wss.on('connection', function connection(ws, request) {
   const queryParams = new URLSearchParams(url.split('?')[1]);
   const token = queryParams.get('token') || "";
   const userId = checkUser(token);
-
-  console.log("request url: ", request.url);
-  console.log("token: ", token);
-  console.log("userId: ", userId)
-  console.log(JWT_SECRET)
   
   if(userId == null) {
     ws.close();
@@ -68,7 +63,6 @@ wss.on('connection', function connection(ws, request) {
     user?.rooms.push(parseData.roomId);  //here we apply multiple checks to enter user into room or not
     }
   
-
    if(parseData.type == "leave_room") {  //close the chat-room  
         const user = users.find(x => x.ws == ws);
         if(!user) {
