@@ -3,16 +3,12 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { URLSearchParams } from 'url';
 import  jwt from 'jsonwebtoken'
 import {JWT_SECRET} from "@repo/backend-common/config"
-
-// const server = createServer({
-//   cert: readFileSync('/path/to/cert.pem'),
-//   key: readFileSync('/path/to/key.pem')
-// });
+import { prismaClient } from "@repo/db/client";
 const wss = new WebSocketServer({port: 8080});
 
 interface User {
   ws : WebSocket,
-  rooms: string[],
+  rooms: number[],
   userId: string
 }
 const users: User[] = [];
@@ -42,11 +38,6 @@ wss.on('connection', function connection(ws, request) {
   const queryParams = new URLSearchParams(url.split('?')[1]);
   const token = queryParams.get('token') || "";
   const userId = checkUser(token);
-
-  console.log("request url: ", request.url);
-  console.log("token: ", token);
-  console.log("userId: ", userId)
-  console.log(JWT_SECRET)
   
   if(userId == null) {
     ws.close();
@@ -60,15 +51,15 @@ wss.on('connection', function connection(ws, request) {
    })
 
 
-  ws.on('message', async function message(data) {    //msg is incoming
-    const parseData = JSON.parse(data as unknown as string);
-
+  ws.on('message', async function message(data) { //msg is incoming
+    const parseData = JSON.parse(data.toString());
     if(parseData.type == "join_room") {
        const user  = users.find(x => x.ws == ws);
-    user?.rooms.push(parseData.roomId);  //here we apply multiple checks to enter user into room or not
+       if(user && !user.rooms.includes(Number(parseData.roomId))) {
+        user.rooms.push(Number(parseData.roomId));          //here we apply multiple checks to enter user into room or not
+       }  
     }
   
-
    if(parseData.type == "leave_room") {  //close the chat-room  
         const user = users.find(x => x.ws == ws);
         if(!user) {
@@ -78,11 +69,19 @@ wss.on('connection', function connection(ws, request) {
    }
    
    if(parseData.type == "chat") {
-    const roomId = parseData.roomId;
+    const roomId = Number(parseData.roomId);
     const message = parseData.message;
+     await prismaClient.chat.create({
+      data : {
+        roomId,
+        message,
+        userId
+      }
+     });
 
     users.forEach(user => {
       if(user?.rooms.includes(roomId)) {  //who are intersted user send here msg to him
+
         user.ws.send(JSON.stringify({
           type: "chat",
           message: message,
@@ -91,6 +90,7 @@ wss.on('connection', function connection(ws, request) {
       }
     })
    }
+
   });
 
 });
