@@ -4,6 +4,7 @@ import { URLSearchParams } from 'url';
 import  jwt from 'jsonwebtoken'
 import {JWT_SECRET} from "@repo/backend-common/config"
 import { prismaClient } from "@repo/db/client";
+
 const wss = new WebSocketServer({port: 8080});
 
 interface User {
