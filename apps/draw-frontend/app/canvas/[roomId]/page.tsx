@@ -1,5 +1,5 @@
 "use client"
-import draw from "@/app/draw/page";
+import draw from "@/app/draw";
 import { useRef, useEffect } from "react"
 export default function Canvas() {
 
