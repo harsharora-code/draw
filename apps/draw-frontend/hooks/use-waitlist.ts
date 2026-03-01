@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { api } from "@shared/routes";
+import { api } from "../shared/route";
 import { z } from "zod";
 
 // We define a localized schema for the form since we just need the email

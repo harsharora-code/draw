@@ -1,12 +1,13 @@
+"use client";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import  WaitlistForm from "../components/WaitListForm"
+import  WaitlistForm from "../components/WaitlistForm";
 import { Pencil } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    // <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    //   <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
        <section className="relative overflow-hidden pt-24 pb-32 sm:pt-32 sm:pb-40 lg:pb-48">
       <div className="absolute top-20 left-10 hidden lg:block opacity-20 pointer-events-none">
         <svg width="120" height="120" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -97,7 +98,7 @@ export default function Home() {
         </motion.div>
       </div>
     </section>
-      </main>
-    </div>
+    //   </main>
+    // </div>
   );
 }
