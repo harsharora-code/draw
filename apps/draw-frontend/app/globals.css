@@ -47,7 +47,113 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-:root {
+@layer base {
+  :root {
+    /* Excalidraw-inspired soft, playful palette */
+    --background: 240 20% 99%; /* Off-white paper */
+    --foreground: 240 10% 15%; /* Soft black ink */
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 15%;
+
+    --primary: 243 65% 63%; /* Playful Indigo/Purple */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 10% 94%;
+    --secondary-foreground: 240 10% 15%;
+
+    --muted: 240 10% 94%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 43 96% 56%; /* Warm yellow/orange for highlights */
+    --accent-foreground: 240 10% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 85%;
+    --input: 240 10% 85%;
+    --ring: 243 65% 63%;
+
+    --radius: 0.75rem;
+
+    --font-sketch: 'Architects Daughter', cursive;
+    --font-sans: 'Inter', sans-serif;
+  }
+
+  .dark {
+    /* Soft dark mode paper */
+    --background: 240 10% 12%;
+    --foreground: 240 20% 95%;
+
+    --card: 240 10% 15%;
+    --card-foreground: 240 20% 95%;
+
+    --popover: 240 10% 15%;
+    --popover-foreground: 240 20% 95%;
+
+    --primary: 243 65% 68%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 10% 20%;
+    --secondary-foreground: 240 20% 95%;
+
+    --muted: 240 10% 20%;
+    --muted-foreground: 240 10% 70%;
+
+    --accent: 43 96% 56%;
+    --accent-foreground: 240 10% 15%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 240 20% 95%;
+
+    --border: 240 10% 25%;
+    --input: 240 10% 25%;
+    --ring: 243 65% 68%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
+    background-image: radial-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sketch);
+  }
+}
+
+@layer utilities {
+  /* Gives elements a slightly hand-drawn, imperfect border look */
+  .sketchy-border {
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    border: 2px solid hsl(var(--foreground));
+  }
+  
+  .sketchy-border-primary {
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+    border: 2px solid hsl(var(--primary));
+  }
+
+  /* Subtle rotation for that 'just placed on desk' feel */
+  .rotate-slight-left {
+    transform: rotate(-1deg);
+  }
+  .rotate-slight-right {
+    transform: rotate(1.5deg);
+  }
+}
+
+
+/* :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -123,4 +229,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
+} */
