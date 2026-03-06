@@ -1,15 +1,19 @@
 "use client"
 import { useEffect, useRef} from "react";
 import draw from "@/app/draw"
-import { Socket } from "dgram";
 
-export function Canvas({roomId}:  
-    {roomId: string}) {
+
+export function Canvas({roomId, socket}:  
+    {
+    roomId: string; 
+    socket: WebSocket;
+    } 
+) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
   
         useEffect(() => {
             if(canvasRef.current) {
-              draw(canvasRef.current, roomId)
+              draw(canvasRef.current, roomId, socket)
             }
         }, [canvasRef])
     
