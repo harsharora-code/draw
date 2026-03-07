@@ -14,7 +14,7 @@ type Shape = {
     centerY: number;
     radius: number;
 }
-export default async function draw(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
+export default async function draw(canvas: HTMLCanvasElement, roomId: Number, socket: WebSocket) {
 
     let existingShape: Shape[] = await getExistingShape(roomId);
 
@@ -57,7 +57,8 @@ export default async function draw(canvas: HTMLCanvasElement, roomId: string, so
                 type: "chat",
                 message: JSON.stringify({
                     shape
-                })
+                }),
+                roomId
             }))
 
         });
@@ -97,10 +98,11 @@ function clearCanvas(existingShape: Shape[], canvas: HTMLCanvasElement, ctx: Can
 }
 
 
-async function getExistingShape(roomId :string) {
+async function getExistingShape(roomId: Number) {
       console.log(`${HTTP_BACKEND}/chat/${roomId}`);
     const res = await axios.get(`${HTTP_BACKEND}/chat/${roomId}`);
     const messages = res.data.msg;
+    console.log(messages);
 
     const shapes = messages.map((x: {message: string}) => {
            const messageData = JSON.parse(x.message);
