@@ -10,13 +10,19 @@ export function RoomCanvas({roomId}:  {roomId: string}) {
         const ws =  new WebSocket(`${WS_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTUxZDUzMS04MGM4LTQ3NDItYjg5Ni03YjdjZjUyN2JiNjEiLCJpYXQiOjE3NzI4MjIwMDV9.veZ9VbkCS50nIkZ4PIJGVjPqaHIfrfI8Q4BJU13HbTo`)
 
         ws.onopen = () => {
+            console.log("connected ws")
             setSocket(ws);
             ws.send(JSON.stringify({
                 type: "join_room",
                 roomId
-            }))
+            }));
+            
         }
-    }, [])
+
+        ws.close = () => {
+            console.log("ws closed")
+        }
+    }, [roomId])
 
         if(!socket) {
             return <div>
