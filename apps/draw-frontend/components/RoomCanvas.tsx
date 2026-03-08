@@ -2,6 +2,7 @@
 import { WS_URL } from "@/config";
 import { useEffect, useState } from "react";
 import {Canvas} from "./Canvas"
+import { da } from "zod/v4/locales";
 
 export function RoomCanvas({roomId}:  {roomId: string}) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -12,10 +13,12 @@ export function RoomCanvas({roomId}:  {roomId: string}) {
         ws.onopen = () => {
             console.log("connected ws")
             setSocket(ws);
-            ws.send(JSON.stringify({
+            const data = JSON.stringify({
                 type: "join_room",
                 roomId
-            }));
+            });
+            console.log(data);
+            ws.send(data);
             
         }
 
