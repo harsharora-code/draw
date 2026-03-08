@@ -25,7 +25,7 @@ export default async function draw(canvas: HTMLCanvasElement, roomId: Number, so
         const message  = JSON.parse(event.data);
         if(message.type == "chat") {
             const parseShape = JSON.parse(message.message);
-            existingShape.push(parseShape);
+            existingShape.push(parseShape.shape);
             clearCanvas(existingShape, canvas, ctx);
         }
 
