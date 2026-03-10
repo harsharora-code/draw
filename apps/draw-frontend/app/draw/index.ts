@@ -74,9 +74,6 @@ export default async function draw(canvas: HTMLCanvasElement, roomId: Number, so
             if(clicked) {
                 const width = e.clientX - startX;
                 const height = e.clientY - startY;
-            //    ctx.clearRect(0, 0, canvas.width, canvas.height);
-            //    ctx.fillStyle = "rgba(0,0,0)";
-            //  ctx.fillRect(0,0, canvas.width, canvas.height);
             clearCanvas(existingShape, canvas, ctx);
                ctx.strokeStyle = "rgba(255, 255, 255)";
                ctx.strokeRect(startX, startY, width, height);
