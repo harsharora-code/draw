@@ -1,10 +1,10 @@
 "use client"
 import { useEffect, useRef, useState} from "react";
-import draw from "@/app/draw"
+import {draw} from "@/app/draw"
 import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
 import { IconButton } from "./IconButton";
 
- export type Tool = 'circle' | "rect" | "pencil";
+export type Tool = "circle" | "rect" | "pencil";
 export function Canvas({roomId, socket}:  
     {
     roomId: Number; 
@@ -16,9 +16,9 @@ export function Canvas({roomId, socket}:
   
         useEffect(() => {
             if(canvasRef.current) {
-              draw(canvasRef.current, roomId, socket)
+              draw(canvasRef.current, roomId, socket, selectedTool)
             }
-        }, [canvasRef])
+        }, [selectedTool])
 
         return <div style={{
             height: "100vh",
