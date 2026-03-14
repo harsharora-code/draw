@@ -2,9 +2,8 @@
 import { WS_URL } from "@/config";
 import { useEffect, useState } from "react";
 import {Canvas} from "./Canvas"
-import { da } from "zod/v4/locales";
 
-export function RoomCanvas({roomId}:  {roomId: string}) {
+export function RoomCanvas({roomId}:  {roomId: number}) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
 
     useEffect(() => {

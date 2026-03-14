@@ -1,6 +1,9 @@
 "use client";
 import axios from "axios"
 import { HTTP_BACKEND } from "@/config";
+import { Tool } from "@/components/Canvas";
+import { useState } from "react";
+import { RefObject } from "react";
 
 type Shape = {
     type: "rect";
@@ -13,8 +16,19 @@ type Shape = {
     centerX: number;
     centerY: number;
     radius: number;
+} | {
+    type: "pencil",
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
 }
-export default async function draw(canvas: HTMLCanvasElement, roomId: Number, socket: WebSocket) {
+export  async function draw(
+    canvas: HTMLCanvasElement,
+     roomId: number,
+    socket: WebSocket,
+    toolRef: React.RefObject<"circle" | "rect" | "pencil">, 
+) {
 
     let existingShape: Shape[] = await getExistingShape(roomId);
 
@@ -28,22 +42,36 @@ export default async function draw(canvas: HTMLCanvasElement, roomId: Number, so
             existingShape.push(parseShape.shape);
             clearCanvas(existingShape, canvas, ctx);
         }
-
- 
       }
 
-        ctx.fillStyle = "rgba(0,0,0)";
-        ctx.fillRect(0,0, canvas.width, canvas.height);
-
+        // ctx.fillStyle = "rgba(0,0,0)";
+        // ctx.fillRect(0,0, canvas.width, canvas.height);
+     clearCanvas(existingShape, canvas, ctx);
         let clicked = false;
         let startX = 0;
         let startY = 0;
+        canvas.addEventListener("mousedown", (e) => {
+            clicked = true;
+            const rect = canvas.getBoundingClientRect();
 
+            console.log(e.clientX);
+            console.log(e.clientY);
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+           clicked = false;
+        })
         canvas.addEventListener("mouseup", (e) => {
             clicked = false;
             const width = e.clientX - startX;
             const height = e.clientY - startY;
-            const shape: Shape = {
+            const  selectedTool = toolRef.current;
+             let shape: Shape | null = null;
+             if(selectedTool === "rect") {
+                shape = {
                 type: "rect",
                 x: startX,
                 y: startY,
@@ -51,7 +79,19 @@ export default async function draw(canvas: HTMLCanvasElement, roomId: Number, so
                 width: width
                 
             }
-            existingShape.push(shape)
+
+             } else if(selectedTool === "circle") {
+                const radius = Math.max(Math.abs(width), Math.abs(height)) /2;
+                shape = {
+                    type: "circle",
+                    radius: radius,
+                    centerX: startX + width / 2,
+                    centerY: startY + height / 2,
+                    
+                }
+             }
+             if(!shape) return;
+            existingShape.push(shape);
 
             socket.send(JSON.stringify({
                 type: "chat",
@@ -62,21 +102,32 @@ export default async function draw(canvas: HTMLCanvasElement, roomId: Number, so
             }))
 
         });
-        canvas.addEventListener("mousedown", (e) => {
-            clicked = true;
-            console.log(e.clientX);
-            console.log(e.clientY);
-            startX = e.clientX;
-            startY = e.clientY;
 
-        });
         canvas.addEventListener("mousemove", (e) => {
+
             if(clicked) {
-                const width = e.clientX - startX;
-                const height = e.clientY - startY;
+
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                const width = mouseX - startX;
+                const height = mouseY - startY;
             clearCanvas(existingShape, canvas, ctx);
-               ctx.strokeStyle = "rgba(255, 255, 255)";
-               ctx.strokeRect(startX, startY, width, height);
+               ctx.strokeStyle = "rgba(255,255,255)";
+            const selectedTool = toolRef.current;
+              if(selectedTool === "rect") {
+                ctx.strokeRect(startX, startY, width, height);
+              } else if(selectedTool === "circle") {
+                const radius = Math.max(Math.abs(width),Math.abs(height)) /2;
+                const centerX = startX + width / 2;
+                const centerY = startY + height /2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.closePath();
+              }
+              console.log("drawing", selectedTool);
+
             }
             
         })
@@ -86,10 +137,16 @@ function clearCanvas(existingShape: Shape[], canvas: HTMLCanvasElement, ctx: Can
      ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "rgba(0,0,0)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-     existingShape.map((Shape) => {
-      if(Shape.type == "rect") {
+
+     existingShape.map((shape) => {
+      if(shape.type == "rect") {
      ctx.strokeStyle = "rgba(255, 255, 255)";
-   ctx.strokeRect(Shape.x, Shape.y, Shape.height, Shape.width);
+   ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+     } else if(shape.type == "circle") {
+        ctx.beginPath();
+        ctx.arc(shape.centerX, shape.centerY,  shape.radius, 0, 2*Math.PI);
+        ctx.stroke();
+        ctx.closePath();
      }
    })
 }
