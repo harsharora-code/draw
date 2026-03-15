@@ -1,6 +1,5 @@
 "use client";
 import axios from "axios"
-import { HTTP_BACKEND } from "@/config";
 import { Tool } from "@/components/Canvas";
 import { useState } from "react";
 import { RefObject } from "react";
@@ -30,23 +29,23 @@ export  async function draw(
     toolRef: React.RefObject<"circle" | "rect" | "pencil">, 
 ) {
 
-    let existingShape: Shape[] = await getExistingShape(roomId);
+    // let existingShape: Shape[] = await getExistingShape(roomId);
 
       const ctx = canvas.getContext("2d");
       if(!ctx) return;
 
-      socket.onmessage = (event) => {          //whenever msgh recive on server  
-        const message  = JSON.parse(event.data);
-        if(message.type == "chat") {
-            const parseShape = JSON.parse(message.message);
-            existingShape.push(parseShape.shape);
-            clearCanvas(existingShape, canvas, ctx);
-        }
-      }
+    //   socket.onmessage = (event) => {          //whenever msgh recive on server  
+    //     const message  = JSON.parse(event.data);
+    //     if(message.type == "chat") {
+    //         const parseShape = JSON.parse(message.message);
+    //         existingShape.push(parseShape.shape); 
+    //         clearCanvas(existingShape, canvas, ctx);
+    //     }
+    //   }
 
         // ctx.fillStyle = "rgba(0,0,0)";
         // ctx.fillRect(0,0, canvas.width, canvas.height);
-     clearCanvas(existingShape, canvas, ctx);
+    //  clearCanvas(existingShape, canvas, ctx);
         let clicked = false;
         let startX = 0;
         let startY = 0;
@@ -91,7 +90,7 @@ export  async function draw(
                 }
              }
              if(!shape) return;
-            existingShape.push(shape);
+            // existingShape.push(shape);
 
             socket.send(JSON.stringify({
                 type: "chat",
@@ -112,7 +111,7 @@ export  async function draw(
                 const mouseY = e.clientY - rect.top;
                 const width = mouseX - startX;
                 const height = mouseY - startY;
-            clearCanvas(existingShape, canvas, ctx);
+            // clearCanvas(existingShape, canvas, ctx);
                ctx.strokeStyle = "rgba(255,255,255)";
             const selectedTool = toolRef.current;
               if(selectedTool === "rect") {
@@ -152,19 +151,19 @@ function clearCanvas(existingShape: Shape[], canvas: HTMLCanvasElement, ctx: Can
 }
 
 
-async function getExistingShape(roomId: Number) {
-      console.log(`${HTTP_BACKEND}/chat/${roomId}`);
-    const res = await axios.get(`${HTTP_BACKEND}/chat/${roomId}`);
-    const messages = res.data.msg;
-    console.log(messages);
+// async function getExistingShape(roomId: Number) {
+//       console.log(`${HTTP_BACKEND}/chat/${roomId}`);
+//     const res = await axios.get(`${HTTP_BACKEND}/chat/${roomId}`);
+//     const messages = res.data.msg;
+//     console.log(messages);
 
-    const shapes = messages.map((x: {message: string}) => {
-           const messageData = JSON.parse(x.message);
-           return messageData.shape;    // shape as message
-    })
+//     const shapes = messages.map((x: {message: string}) => {
+//            const messageData = JSON.parse(x.message);
+//            return messageData.shape;    // shape as message
+//     })
 
-    return shapes;
+//     return shapes;
 
 
 
-}
+// }
