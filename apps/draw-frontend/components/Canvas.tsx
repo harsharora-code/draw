@@ -14,7 +14,6 @@ export function Canvas({roomId, socket}:
     } 
 ) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const toolRef = useRef<Tool>("circle");
     const [selectedTool,  setSelectedTool] = useState<Tool>("circle")
     const [game, setGame] = useState<Game>();
 
@@ -26,11 +25,15 @@ export function Canvas({roomId, socket}:
   
         useEffect(() => {
             if(canvasRef.current) {
-              draw(canvasRef.current, roomId, socket, toolRef)
+            //   draw(canvasRef.current, roomId, socket, toolRef)
               const g = new Game(canvasRef.current, roomId, socket)
               setGame(g);
+              return () => {
+                g.destroy();  //all the event listener be remove
+            } 
             }
-        }, [])
+            
+        }, [canvasRef])
 
         return <div style={{
             height: "100vh",
