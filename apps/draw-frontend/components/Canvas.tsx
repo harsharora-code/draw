@@ -3,22 +3,34 @@ import { useEffect, useRef, useState} from "react";
 import {draw} from "@/app/draw"
 import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
 import { IconButton } from "./IconButton";
+import { toLowerCase } from "zod";
+import { Game } from "@/app/draw/game";
 
 export type Tool = "circle" | "rect" | "pencil";
 export function Canvas({roomId, socket}:  
     {
-    roomId: Number; 
+    roomId: number; 
     socket: WebSocket;
     } 
 ) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const toolRef = useRef<Tool>("circle");
     const [selectedTool,  setSelectedTool] = useState<Tool>("circle")
+    const [game, setGame] = useState<Game>();
+
+    useEffect(() => {
+        
+        game?.setTool(selectedTool)
+
+    }, [selectedTool, game])
   
         useEffect(() => {
             if(canvasRef.current) {
-              draw(canvasRef.current, roomId, socket, selectedTool)
+              draw(canvasRef.current, roomId, socket, toolRef)
+              const g = new Game(canvasRef.current, roomId, socket)
+              setGame(g);
             }
-        }, [selectedTool])
+        }, [])
 
         return <div style={{
             height: "100vh",
