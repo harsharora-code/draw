@@ -17,6 +17,12 @@ type Shape = {
     startY: number,
     endX: number,
     endY: number
+} | {
+     type: "line",
+     fromX : number,
+     fromY: number,
+     toX: number,
+     toY: number
 }
 
 export class Game {
@@ -28,7 +34,10 @@ export class Game {
         private clicked: boolean;
         private startX = 0;
         private startY = 0;
-        private selectedTool: Tool = "circle";
+        private selectedTool: Tool = "panTool";
+        private scale: number =  0;
+        private panX: number = 0;
+        private panY: number = 0;
 
         constructor(canvas: HTMLCanvasElement, roomId: number, socket: WebSocket) {
         this.canvas = canvas;
@@ -37,6 +46,8 @@ export class Game {
         this.roomId = roomId;
         this.socket = socket;
         this.clicked = false;
+        this.canvas.width = document.body.clientWidth;
+        this.canvas.height = document.body.clientHeight;
         this.init();
         this.initHandler();
         this.mouseHandlers();
@@ -49,9 +60,10 @@ export class Game {
                  this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
                  this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
                  this.canvas.removeEventListener("mouseleave", this.mouseLeaveHandler);
+                 this.canvas.removeEventListener("wheel", this.mouseWheelHandler);
         }
 
-        setTool(tool: "circle" | "pencil" | "rect") {
+        setTool(tool: "circle" | "pencil" | "rect" | "panTool") {
             this.selectedTool = tool;
 
         }
@@ -74,9 +86,25 @@ export class Game {
     }
 
     clearCanvas() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = "rgba(0,0,0)";
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // this.ctx.fillStyle = "rgba(0,0,0)";
+    // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.setTransform(this.scale, 0, 0, this.scale, this.panX, this.panY);
+        this.ctx.clearRect(
+
+            -this.panX / this.scale, 
+            -this.panY / this.scale, 
+
+            this.canvas.width / this.scale, 
+            this.canvas.height/ this.scale);
+        this.ctx.fillStyle = "rgba(18, 18, 18)"
+        this.ctx.fillRect(  
+            // Adjusts the offset of the canvas
+            -this.panX / this.scale, 
+            -this.panY / this.scale, 
+            // Adjusts the scale of the canvas
+            this.canvas.width/ this.scale, 
+            this.canvas.height / this.scale);
 
      this.existingShape.map((shape) => {
       if(shape.type == "rect") {
@@ -165,12 +193,35 @@ export class Game {
                 this.ctx.arc(centerX, centerY, Math.abs(radius), 0, 2 * Math.PI);
                 this.ctx.stroke();
                 this.ctx.closePath();
+              } else if(selectedTool == "pencil") {
+
               }
               console.log("drawing", selectedTool);
 
             }
 
         }
+
+        mouseWheelHandler = (e : WheelEvent) => {
+        e.preventDefault();
+
+        const scaleAmount = -e.deltaY / 500;
+        const newScale = this.scale * (1 + scaleAmount); 
+
+        const mouseX = e.clientX - this.canvas.offsetLeft;
+        const mouseY = e.clientY - this.canvas.offsetTop;
+        
+        const canvasMouseX = (mouseX - this.panX) / this.scale;
+        const canvasMouseY = (mouseY - this.panY) / this.scale;
+
+        this.panX -= (canvasMouseX * newScale - canvasMouseX * this.scale);
+        this.panY -= (canvasMouseY * newScale - canvasMouseY * this.scale);
+    
+        this.scale = newScale;
+    
+        this.clearCanvas();
+        
+    };
 
         mouseLeaveHandler = () => {
             this.clicked = false;

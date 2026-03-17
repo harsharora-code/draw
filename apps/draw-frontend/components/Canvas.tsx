@@ -6,7 +6,7 @@ import { IconButton } from "./IconButton";
 import { toLowerCase } from "zod";
 import { Game } from "@/app/draw/game";
 
-export type Tool = "circle" | "rect" | "pencil";
+export type Tool = "circle" | "rect" | "pencil" | "panTool";
 export function Canvas({roomId, socket}:  
     {
     roomId: number; 
