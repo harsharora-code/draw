@@ -125,10 +125,17 @@ export class Game {
 
     // initMouseHandlers() {
     mouseDownHandler = (e: MouseEvent) => {
-    const rect = this.canvas.getBoundingClientRect();
     this.clicked = true;
-    this.startX = e.clientX - rect.left;
-    this.startY = e.clientY - rect.top;
+    if (this.selectedTool === "panTool") {
+        // For panning, store raw clientX/Y for delta calculation
+        this.startX = e.clientX;
+        this.startY = e.clientY;
+    } else {
+        // For drawing, store position relative to canvas
+        const rect = this.canvas.getBoundingClientRect();
+        this.startX = e.clientX - rect.left;
+        this.startY = e.clientY - rect.top;
+    }
 }
         mouseUpHandler = (e: MouseEvent) => {
 
@@ -165,8 +172,8 @@ export class Game {
                 endY: (e.clientY - this.panY) / this.scale,
             }
         } else if (selectedTool === "panTool"){
-            this.startX = e.clientX 
-            this.startY = e.clientY 
+            // Panning is handled in mouseMoveHandler, nothing to do here
+            return;
         }
 
              if(!shape) return;
@@ -186,6 +193,19 @@ export class Game {
         mouseMoveHandler = (e : MouseEvent) => {
 
             if(this.clicked) {
+                const selectedTool = this.selectedTool;
+
+                // Handle panning
+                if (selectedTool === "panTool") {
+                    const dx = e.clientX - this.startX;
+                    const dy = e.clientY - this.startY;
+                    this.panX += dx;
+                    this.panY += dy;
+                    this.startX = e.clientX;
+                    this.startY = e.clientY;
+                    this.clearCanvas();
+                    return;
+                }
 
                 const rect = this.canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
@@ -201,7 +221,6 @@ export class Game {
 
             this.clearCanvas();
                this.ctx.strokeStyle = "rgba(0, 0, 0)";
-            const selectedTool = this.selectedTool;
               if(selectedTool === "rect") {
                 this.ctx.strokeRect(canvasStartX, canvasStartY, width, height);
               } else if(selectedTool === "circle") {
@@ -224,22 +243,32 @@ export class Game {
         mouseWheelHandler = (e : WheelEvent) => {
         e.preventDefault();
 
-        const scaleAmount = -e.deltaY / 500;
-        const newScale = this.scale * (1 + scaleAmount); 
+        // Pinch-to-zoom (trackpad) or Ctrl+scroll (mouse)
+        if (e.ctrlKey) {
+            const scaleAmount = -e.deltaY / 500;
+            const newScale = this.scale * (1 + scaleAmount);
 
-        const mouseX = e.clientX - this.canvas.offsetLeft;
-        const mouseY = e.clientY - this.canvas.offsetTop;
-        
-        const canvasMouseX = (mouseX - this.panX) / this.scale;
-        const canvasMouseY = (mouseY - this.panY) / this.scale;
+            const mouseX = e.clientX - this.canvas.offsetLeft;
+            const mouseY = e.clientY - this.canvas.offsetTop;
 
-        this.panX -= (canvasMouseX * newScale - canvasMouseX * this.scale);
-        this.panY -= (canvasMouseY * newScale - canvasMouseY * this.scale);
-    
-        this.scale = newScale;
-    
+            const canvasMouseX = (mouseX - this.panX) / this.scale;
+            const canvasMouseY = (mouseY - this.panY) / this.scale;
+
+            this.panX -= (canvasMouseX * newScale - canvasMouseX * this.scale);
+            this.panY -= (canvasMouseY * newScale - canvasMouseY * this.scale);
+
+            this.scale = newScale;
+        } else if (e.shiftKey) {
+            // Shift + scroll for horizontal pan
+            this.panX -= e.deltaY;
+        } else {
+            // Normal scroll for panning
+            this.panX -= e.deltaX;
+            this.panY -= e.deltaY;
+        }
+
         this.clearCanvas();
-        
+
     };
 
         mouseLeaveHandler = () => {

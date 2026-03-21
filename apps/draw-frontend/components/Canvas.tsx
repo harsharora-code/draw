@@ -21,54 +21,61 @@ export function Canvas({roomId, socket}:
     useEffect(() => {
         
         game?.setTool(selectedTool)
-
+ 
     }, [selectedTool, game])
   
         useEffect(() => {
             if(canvasRef.current) {
-            //   draw(canvasRef.current, roomId, socket, toolRef)
               const g = new Game(canvasRef.current, roomId, socket)
               setGame(g);
 
-              if(selectedTool == "panTool") {
-                const handleGrab = () => {
-                    setGrabbing((prev) => !prev)
+              const handleKeyDown = (e: KeyboardEvent) => {
+                switch (e.key) {
+                    case "1":
+                        setSelectedTool("panTool");
+                        break;
+                    case "2":
+                        setSelectedTool("pencil");
+                        break;
+                    case "3":
+                        setSelectedTool("rect");
+                        break;
+                    case "4":
+                        setSelectedTool("circle");
+                        break;
                 }
-                document.addEventListener("mouseup", handleGrab);
-                document.addEventListener("mousedown", handleGrab);
-                return () => {
-                    document.removeEventListener("mouseup", handleGrab);
-                    document.removeEventListener("mousedown", handleGrab);
-                }
-              }
+              };
 
-            const handleKeyDown = (e: KeyboardEvent) => {
-            switch (e.key) {
-                case "1":
-                    setSelectedTool("panTool");
-                    break;
-                case "2":
-                    setSelectedTool("pencil");
-                    break;
-                case "3":
-                    setSelectedTool("rect");
-                    break;
-                case "4":
-                    setSelectedTool("circle");
-                    break;
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
+              document.addEventListener("keydown", handleKeyDown);
               return () => {
-                g.destroy();  //all the event listener be remove
-            } 
+                document.removeEventListener("keydown", handleKeyDown);
+                g.destroy();
+              }
             }
-            
+
         }, [canvasRef])
 
+        // Separate effect for grab cursor when using panTool
+        useEffect(() => {
+            if (selectedTool !== "panTool") {
+                setGrabbing(false);
+                return;
+            }
+
+            const handleMouseDown = () => setGrabbing(true);
+            const handleMouseUp = () => setGrabbing(false);
+
+            document.addEventListener("mousedown", handleMouseDown);
+            document.addEventListener("mouseup", handleMouseUp);
+
+            return () => {
+                document.removeEventListener("mousedown", handleMouseDown);
+                document.removeEventListener("mouseup", handleMouseUp);
+            };
+        }, [selectedTool])
+
         return <div className={`h-screen overflow-hidden bg-white ${(selectedTool == "panTool") ? (grabbing ? "cursor-grabbing" : "cursor-grab") : "cursor-crosshair"}`}>
-               <canvas ref={canvasRef} className="w-full h-full"></canvas>
+               <canvas ref={canvasRef} height={window.innerHeight} width={window.innerWidth}></canvas>
                <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool}/>
                </div>
 
