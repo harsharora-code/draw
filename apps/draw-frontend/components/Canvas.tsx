@@ -1,12 +1,12 @@
 "use client"
 import { useEffect, useRef, useState, useMemo} from "react";
 import {draw} from "@/app/draw"
-import { Circle, Pencil, RectangleHorizontalIcon, Hand, Slash } from "lucide-react";
+import { Circle, Pencil, RectangleHorizontalIcon, Hand, ArrowRight} from "lucide-react";
 import { IconButton } from "./IconButton";
 import { Game } from "@/app/draw/game";
 
 
-export type Tool = "circle" | "rect" | "pencil" | "panTool";
+export type Tool = "circle" | "rect" | "pencil" | "panTool" | "arrow" | "line";
 export function Canvas({roomId, socket}:  
     {
     roomId: number; 
@@ -114,6 +114,14 @@ export function Canvas({roomId, socket}:
                 onClick={() => {
                     setSelectedTool("circle")
                 }} activated={selectedTool === "circle"} icon={<Circle />}></IconButton>
+                <IconButton 
+                shortKey={5}
+               onClick={() => {
+                setSelectedTool("arrow")
+               }}
+               activated={selectedTool == "arrow"}
+               icon={<ArrowRight/>}>
+                </IconButton>
             </div>
               <p className="text-white/30 mt-1 absolute w-full mx-auto scale-[0.8] text-sm text-center">To zoom, use scroll or pinch!</p>
         </div>
