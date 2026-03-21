@@ -23,6 +23,12 @@ type Shape = {
      fromY: number,
      toX: number,
      toY: number
+} | {
+    type: "arrow",
+    fromX: number, 
+    fromY: number, 
+    toX: number,
+    toY : number
 }
 
 export class Game {
@@ -64,7 +70,7 @@ export class Game {
                  this.canvas.removeEventListener("wheel", this.mouseWheelHandler);
         }
 
-        setTool(tool: "circle" | "pencil" | "rect" | "panTool") {
+        setTool(tool: "circle" | "pencil" | "rect" | "panTool" | "arrow" | "line") {
             this.selectedTool = tool;
 
         }
@@ -118,6 +124,14 @@ export class Game {
            this.ctx.lineTo(shape.endX, shape.endY);
            this.ctx.stroke();
            this.ctx.closePath();
+     } else if(shape.type == "arrow") {
+           this.drawArrow(shape.fromX, shape.fromY, shape.toX, shape.toY);
+     } else if(shape.type == "line") {
+           this.ctx.beginPath();
+           this.ctx.moveTo(shape.fromX, shape.fromY);
+           this.ctx.lineTo(shape.toX, shape.toY);
+           this.ctx.stroke();
+           this.ctx.closePath();
      }
    })
 
@@ -138,7 +152,7 @@ export class Game {
     }
 }
         mouseUpHandler = (e: MouseEvent) => {
-
+            if(!this.clicked) return;
             this.clicked = false;
             // const rect = this.canvas.getBoundingClientRect();
             // const mouseX = e.clientX - rect.left;
@@ -170,6 +184,24 @@ export class Game {
                 startY: (this.startY - this.panY) / this.scale,
                 endX: (e.clientX - this.panX) / this.scale,
                 endY: (e.clientY - this.panY) / this.scale,
+            }
+        } else if (selectedTool === "arrow") {
+            const rect = this.canvas.getBoundingClientRect();
+            shape = {
+                type: "arrow",
+                fromX: (this.startX - this.panX) / this.scale,
+                fromY: (this.startY - this.panY) / this.scale,
+                toX: (e.clientX - rect.left - this.panX) / this.scale,
+                toY: (e.clientY - rect.top - this.panY) / this.scale,
+            }
+        } else if (selectedTool === "line") {
+            const rect = this.canvas.getBoundingClientRect();
+            shape = {
+                type: "line",
+                fromX: (this.startX - this.panX) / this.scale,
+                fromY: (this.startY - this.panY) / this.scale,
+                toX: (e.clientX - rect.left - this.panX) / this.scale,
+                toY: (e.clientY - rect.top - this.panY) / this.scale,
             }
         } else if (selectedTool === "panTool"){
             // Panning is handled in mouseMoveHandler, nothing to do here
@@ -231,8 +263,14 @@ export class Game {
                 this.ctx.arc(centerX, centerY, Math.abs(radius), 0, 2 * Math.PI);
                 this.ctx.stroke();
                 this.ctx.closePath();
-              } else if(selectedTool == "pencil") {
-
+              } else if(selectedTool == "arrow") {
+                this.drawArrow(canvasStartX, canvasStartY, canvasMouseX, canvasMouseY);
+              } else if(selectedTool == "line" || selectedTool == "pencil") {
+                this.ctx.beginPath();
+                this.ctx.moveTo(canvasStartX, canvasStartY);
+                this.ctx.lineTo(canvasMouseX, canvasMouseY);
+                this.ctx.stroke();
+                this.ctx.closePath();
               }
               console.log("drawing", selectedTool);
 
@@ -243,11 +281,10 @@ export class Game {
         mouseWheelHandler = (e : WheelEvent) => {
         e.preventDefault();
 
-        // Pinch-to-zoom (trackpad) or Ctrl+scroll (mouse)
+
         if (e.ctrlKey) {
             const scaleAmount = -e.deltaY / 500;
-            const newScale = this.scale * (1 + scaleAmount);
-
+            const newScale = Math.min(Math.max(this.scale * (1 + scaleAmount), 0.2), 5);
             const mouseX = e.clientX - this.canvas.offsetLeft;
             const mouseY = e.clientY - this.canvas.offsetTop;
 
@@ -263,14 +300,41 @@ export class Game {
             this.panX -= e.deltaY;
         } else {
             // Normal scroll for panning
-            this.panX -= e.deltaX;
-            this.panY -= e.deltaY;
+            this.panX -= e.deltaX * 0.8;
+            this.panY -= e.deltaY * 0.8;
         }
 
         this.clearCanvas();
 
     };
 
+    drawArrow =(fromX: number, fromY: number, toX: number, toY: number) => {
+        const ctx = this.ctx;
+        const headLength = 10 / this.scale;
+         const angle = Math.atan2(toY - fromY, toX - fromX);
+          ctx.strokeStyle = "rgba(0, 0, 0)";
+          ctx.fillStyle = "rgba(0, 0, 0)";
+
+         ctx.beginPath();
+          ctx.moveTo(fromX, fromY);
+          ctx.lineTo(toX, toY);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(toX, toY);
+          ctx.lineTo(
+        toX - headLength * Math.cos(angle - Math.PI / 6),
+        toY - headLength * Math.sin(angle - Math.PI / 6)
+    );
+    ctx.lineTo(
+        toX - headLength * Math.cos(angle + Math.PI / 6),
+        toY - headLength * Math.sin(angle + Math.PI / 6)
+    );
+    ctx.lineTo(toX, toY);
+    ctx.fill();
+
+
+    }
         mouseLeaveHandler = () => {
             this.clicked = false;
         }
