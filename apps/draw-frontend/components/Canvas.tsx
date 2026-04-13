@@ -86,7 +86,7 @@ export function Canvas({roomId, socket}:
     selectedTool: Tool,
     setSelectedTool: (s: Tool) => void
 }) {
-    return <div className="fixed top-18  left-[50%] -translate-x-[50%] w-fit">
+    return <div className="flex fixed top-18  left-[50%] -translate-x-[50%] w-fit">
             <div className="flex bg-[#232329] px-4 py-1 rounded-md gap-3">
                 <IconButton
                 shortKey={1}
@@ -130,6 +130,9 @@ export function Canvas({roomId, socket}:
                 activated={selectedTool == "eraser"}
                 icon={<Eraser/>}>
                 </IconButton>
+            </div>
+            <div className="bg-[#403E6A] px-4 py-1 rounded-md gap-3">
+                <p>share</p>
             </div>
               <p className="text-white/30 mt-1 absolute w-full mx-auto scale-[0.8] text-sm text-center">To zoom, use scroll or pinch!</p>
         </div>
