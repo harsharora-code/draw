@@ -49,7 +49,7 @@
 
 @layer base {
   :root {
-    /* Excalidraw-inspired soft, playful palette */
+   
     --background: 240 20% 99%; /* Off-white paper */
     --foreground: 240 10% 15%; /* Soft black ink */
 

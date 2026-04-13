@@ -25,11 +25,12 @@ type Shape = {
      toY: number
 } | {
     type: "arrow",
-    fromX: number, 
-    fromY: number, 
+    fromX: number,
+    fromY: number,
     toX: number,
     toY : number
 }
+
 
 export class Game {
         private canvas: HTMLCanvasElement;
@@ -70,7 +71,7 @@ export class Game {
                  this.canvas.removeEventListener("wheel", this.mouseWheelHandler);
         }
 
-        setTool(tool: "circle" | "pencil" | "rect" | "panTool" | "arrow" | "line") {
+        setTool(tool: "circle" | "pencil" | "rect" | "panTool" | "arrow" | "line" | "eraser") {
             this.selectedTool = tool;
 
         }
@@ -140,15 +141,23 @@ export class Game {
     // initMouseHandlers() {
     mouseDownHandler = (e: MouseEvent) => {
     this.clicked = true;
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
     if (this.selectedTool === "panTool") {
         // For panning, store raw clientX/Y for delta calculation
         this.startX = e.clientX;
         this.startY = e.clientY;
+    } else if (this.selectedTool === "eraser") {
+        // Erase on click
+        const canvasX = (mouseX - this.panX) / this.scale;
+        const canvasY = (mouseY - this.panY) / this.scale;
+        this.eraseHandler(canvasX, canvasY);
     } else {
         // For drawing, store position relative to canvas
-        const rect = this.canvas.getBoundingClientRect();
-        this.startX = e.clientX - rect.left;
-        this.startY = e.clientY - rect.top;
+        this.startX = mouseX;
+        this.startY = mouseY;
     }
 }
         mouseUpHandler = (e: MouseEvent) => {
@@ -271,12 +280,17 @@ export class Game {
                 this.ctx.lineTo(canvasMouseX, canvasMouseY);
                 this.ctx.stroke();
                 this.ctx.closePath();
+              } else if(selectedTool == "eraser") {
+                this.eraseHandler(canvasMouseX, canvasMouseY);
+                return;
+
               }
               console.log("drawing", selectedTool);
 
             }
 
         }
+
 
         mouseWheelHandler = (e : WheelEvent) => {
         e.preventDefault();
@@ -311,6 +325,9 @@ export class Game {
     drawArrow =(fromX: number, fromY: number, toX: number, toY: number) => {
         const ctx = this.ctx;
         const headLength = 10 / this.scale;
+        const headAngle  = Math.PI / 6;
+
+
          const angle = Math.atan2(toY - fromY, toX - fromX);
           ctx.strokeStyle = "rgba(0, 0, 0)";
           ctx.fillStyle = "rgba(0, 0, 0)";
@@ -323,18 +340,106 @@ export class Game {
           ctx.beginPath();
           ctx.moveTo(toX, toY);
           ctx.lineTo(
-        toX - headLength * Math.cos(angle - Math.PI / 6),
-        toY - headLength * Math.sin(angle - Math.PI / 6)
+        toX - headLength * Math.cos(angle - headAngle),
+        toY - headLength * Math.sin(angle - headAngle)
     );
+
+    ctx.moveTo(toX, toY);
     ctx.lineTo(
-        toX - headLength * Math.cos(angle + Math.PI / 6),
-        toY - headLength * Math.sin(angle + Math.PI / 6)
+        toX - headLength * Math.cos(angle + headAngle),
+        toY - headLength * Math.sin(angle + headAngle)
     );
-    ctx.lineTo(toX, toY);
+ ctx.lineTo(toX, toY);
     ctx.fill();
 
 
     }
+
+        eraseHandler = (x: number, y: number) => {
+    const threshold = 10;
+
+    this.existingShape = this.existingShape.filter(shape => {
+        if (shape.type === "rect") {
+            return !(
+                x >= shape.x &&
+                x <= shape.x + shape.width &&
+                y >= shape.y &&
+                y <= shape.y + shape.height
+            );
+        }
+
+        if (shape.type === "circle") {
+            const dx = x - shape.centerX;
+            const dy = y - shape.centerY;
+            return Math.sqrt(dx * dx + dy * dy) > shape.radius;
+        }
+
+        if (shape.type === "pencil") {
+            const dist = this.pointToLineDistance(
+                x, y,
+                shape.startX, shape.startY,
+                shape.endX, shape.endY
+            );
+            return dist > threshold;
+        }
+
+        if (shape.type === "line") {
+            const dist = this.pointToLineDistance(
+                x, y,
+                shape.fromX, shape.fromY,
+                shape.toX, shape.toY
+            );
+            return dist > threshold;
+        }
+
+        if (shape.type === "arrow") {
+            const dist = this.pointToLineDistance(
+                x, y,
+                shape.fromX, shape.fromY,
+                shape.toX, shape.toY
+            );
+            return dist > threshold;
+        }
+
+        return true;
+    });
+
+    this.clearCanvas();
+};
+
+pointToLineDistance = (
+    px: number, py: number,
+    x1: number, y1: number,
+    x2: number, y2: number
+) => {
+    const A = px - x1;
+    const B = py - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    const param = lenSq !== 0 ? dot / lenSq : -1;
+
+    let xx, yy;
+
+    if (param < 0) {
+        xx = x1;
+        yy = y1;
+    } else if (param > 1) {
+        xx = x2;
+        yy = y2;
+    } else {
+        xx = x1 + param * C;
+        yy = y1 + param * D;
+    }
+
+    const dx = px - xx;
+    const dy = py - yy;
+
+    return Math.sqrt(dx * dx + dy * dy);
+};
+
         mouseLeaveHandler = () => {
             this.clicked = false;
         }

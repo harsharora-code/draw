@@ -1,0 +1,4 @@
+{
+  "installCommand": "pnpm install --filter draw-frontend...",
+  "buildCommand": "pnpm build --filter draw-frontend"
+}

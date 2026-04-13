@@ -1,12 +1,12 @@
 "use client"
 import { useEffect, useRef, useState, useMemo} from "react";
 import {draw} from "@/app/draw"
-import { Circle, Pencil, RectangleHorizontalIcon, Hand, ArrowRight} from "lucide-react";
+import { Circle, Pencil, RectangleHorizontalIcon, Hand, ArrowRight, Eraser} from "lucide-react";
 import { IconButton } from "./IconButton";
 import { Game } from "@/app/draw/game";
 
 
-export type Tool = "circle" | "rect" | "pencil" | "panTool" | "arrow" | "line";
+export type Tool = "circle" | "rect" | "pencil" | "panTool" | "arrow" | "line" | "eraser";
 export function Canvas({roomId, socket}:  
     {
     roomId: number; 
@@ -86,7 +86,7 @@ export function Canvas({roomId, socket}:
     selectedTool: Tool,
     setSelectedTool: (s: Tool) => void
 }) {
-    return <div className="fixed top-18  left-[50%] -translate-x-[50%] w-fit">
+    return <div className="flex fixed top-18  left-[50%] -translate-x-[50%] w-fit">
             <div className="flex bg-[#232329] px-4 py-1 rounded-md gap-3">
                 <IconButton
                 shortKey={1}
@@ -122,6 +122,17 @@ export function Canvas({roomId, socket}:
                activated={selectedTool == "arrow"}
                icon={<ArrowRight/>}>
                 </IconButton>
+                <IconButton
+                shortKey={6}
+                onClick={() => {
+                    setSelectedTool("eraser")
+                }}
+                activated={selectedTool == "eraser"}
+                icon={<Eraser/>}>
+                </IconButton>
+            </div>
+            <div className="bg-[#403E6A] px-4 py-1 rounded-md gap-3">
+                <p>share</p>
             </div>
               <p className="text-white/30 mt-1 absolute w-full mx-auto scale-[0.8] text-sm text-center">To zoom, use scroll or pinch!</p>
         </div>
